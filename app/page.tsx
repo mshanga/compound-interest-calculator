@@ -1,101 +1,124 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [inputs, setInputs] = useState({
+    initialAmount: "",
+    monthlyDeposit: "",
+    interestRate: "",
+    years: "",
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [result, setResult] = useState<{ futureValue: string | null; contribution: string | null }>({ futureValue: null, contribution: null });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    // Remove commas and validate as numeric
+    const numericValue = value.replace(/,/g, "");
+    if (!/^\d*$/.test(numericValue)) return;
+
+    // Format with commas for readability
+    const formattedValue = new Intl.NumberFormat("en-KE").format(Number(numericValue) || 0);
+
+    setInputs((prev) => ({ ...prev, [name]: numericValue }));
+    e.target.value = formattedValue;
+  };
+
+  const calculateCompoundInterest = () => {
+    const { initialAmount, monthlyDeposit, interestRate, years } = inputs;
+
+    const principal = parseFloat(initialAmount) || 0;
+    const deposit = parseFloat(monthlyDeposit) || 0;
+    const rate = parseFloat(interestRate) / 100 || 0; // Convert APR to decimal
+    const t = parseFloat(years) || 0;
+
+    const n = 12; // Monthly compounding
+
+    // Future value of principal
+    const futurePrincipal = principal * Math.pow(1 + rate / n, n * t);
+
+    // Future value of monthly deposits
+    const futureDeposits =
+      deposit *
+      ((Math.pow(1 + rate / n, n * t) - 1) / (rate / n)) *
+      (1 + rate / n);
+
+    // Total future value
+    const futureValue = Math.round(futurePrincipal + futureDeposits);
+
+    // Total contribution (initial + all deposits)
+    const contribution = Math.round(principal + deposit * t * 12);
+
+    setResult({
+      futureValue: new Intl.NumberFormat("en-KE").format(futureValue),
+      contribution: new Intl.NumberFormat("en-KE").format(contribution),
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+        <h1 className="text-2xl font-extrabold mb-6 text-center text-blue-600">
+          Compound Interest Calculator
+        </h1>
+        <div className="space-y-4">
+          <input
+            type="text"
+            name="initialAmount"
+            placeholder="Initial Amount (KES)"
+            onChange={handleChange}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+          <input
+            type="text"
+            name="monthlyDeposit"
+            placeholder="Monthly Deposit (KES)"
+            onChange={handleChange}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+          <input
+            type="number"
+            name="interestRate"
+            placeholder="Interest Rate (APR in %)"
+            value={inputs.interestRate}
+            onChange={(e) =>
+              setInputs((prev) => ({ ...prev, interestRate: e.target.value }))
+            }
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+          <input
+            type="number"
+            name="years"
+            placeholder="Duration (Years)"
+            value={inputs.years}
+            onChange={(e) =>
+              setInputs((prev) => ({ ...prev, years: e.target.value }))
+            }
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+          <button
+            onClick={calculateCompoundInterest}
+            className="w-full bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600 transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Calculate
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {result.futureValue && (
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-800 text-center">Results</h2>
+            <div className="text-center mt-4">
+              <p className="text-lg font-semibold text-green-600">
+                Future Value: <span className="font-bold">KES {result.futureValue}</span>
+              </p>
+              <p className="text-lg font-medium text-gray-700">
+                Total Contribution: <span className="font-bold">KES {result.contribution}</span>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
