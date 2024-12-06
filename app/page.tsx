@@ -28,29 +28,31 @@ export default function Home() {
 
   const calculateCompoundInterest = () => {
     const { initialAmount, monthlyDeposit, interestRate, years } = inputs;
-
+  
     const principal = parseFloat(initialAmount) || 0;
     const deposit = parseFloat(monthlyDeposit) || 0;
     const rate = parseFloat(interestRate) / 100 || 0; // Convert APR to decimal
     const t = parseFloat(years) || 0;
-
-    const n = 12; // Monthly compounding
-
-    // Future value of principal
+  
+    const n = 1; // Annual compounding
+  
+    // Future value of principal (annual compounding)
     const futurePrincipal = principal * Math.pow(1 + rate / n, n * t);
-
-    // Future value of monthly deposits
+  
+    // Future value of monthly deposits (only if deposit > 0)
     const futureDeposits =
-      deposit *
-      ((Math.pow(1 + rate / n, n * t) - 1) / (rate / n)) *
-      (1 + rate / n);
-
+      deposit > 0
+        ? deposit *
+          ((Math.pow(1 + rate / n, n * t) - 1) / (rate / n)) *
+          (1 + rate / n)
+        : 0;
+  
     // Total future value
     const futureValue = Math.round(futurePrincipal + futureDeposits);
-
+  
     // Total contribution (initial + all deposits)
     const contribution = Math.round(principal + deposit * t * 12);
-
+  
     setResult({
       futureValue: new Intl.NumberFormat("en-KE").format(futureValue),
       contribution: new Intl.NumberFormat("en-KE").format(contribution),
