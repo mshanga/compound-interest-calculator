@@ -15,7 +15,7 @@ const CompoundInterestCalculator = () => {
     futureValue: "",
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     // Remove commas for parsing and store clean value
@@ -60,7 +60,7 @@ const CompoundInterestCalculator = () => {
     });
   };
 
-  const formatNumber = (num) => {
+  const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(Math.round(num));
   };
 
@@ -82,7 +82,7 @@ const CompoundInterestCalculator = () => {
               value={
                 inputs.initialAmount
                   ? new Intl.NumberFormat().format(
-                      inputs.initialAmount.replace(/,/g, "")
+                      parseFloat(inputs.initialAmount.replace(/,/g, ""))
                     )
                   : ""
               }
@@ -103,8 +103,7 @@ const CompoundInterestCalculator = () => {
               value={
                 inputs.monthlyDeposit
                   ? new Intl.NumberFormat().format(
-                      inputs.monthlyDeposit.replace(/,/g, ""
-                      )
+                      parseFloat(inputs.monthlyDeposit.replace(/,/g, ""))
                     )
                   : ""
               }
